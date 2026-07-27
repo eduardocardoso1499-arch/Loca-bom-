@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  equipments   Equipment[]
+  sentRequests RentalRequest[] @relation("Requester")
+}
+
+model Equipment {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  dailyPrice  Float
+  city        String
+  imageUrl    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  ownerId  String
+  owner    User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  requests RentalRequest[]
+}
+
+model RentalRequest {
+  id          String   @id @default(cuid())
+  startDate   DateTime
+  endDate     DateTime
+  message     String?
+  status      String   @default("pendente")
+  createdAt   DateTime @default(now())
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  requesterId String
+  requester   User      @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+}
